@@ -13,34 +13,3 @@ describe('GET /api/ping', () => {
         expect(response.body.success).to.be.true;
     })
 })
-
-describe('GET /api/posts', () => {
-    it('Should return a list of posts in ascending order by id', async () => {
-    });
-
-    it('Should return a list of posts in descending order by id', async () => {
-
-    });
-
-    it('Should return a list of posts in ascending order by the reads field', async () => {
-
-    });
-
-    it('Should return a list of posts in descending order by the reads field', async () => {
-
-    });
-
-    it('Should return a list of posts in ascending order by the likes field', async () => {
-
-    });
-
-    it('Should return a list of posts in descending order by the likes field', async () => {
-
-    });
-    it('Should return a list of posts in ascending order by the popularity field', async () => {
-
-    })
-    it('Should return a list of posts in descending order by the popularity field', async () => {
-
-    })
-})
