@@ -1,8 +1,8 @@
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
 const service = require('./api.service');
 const quickSort = require('./utils/quickSort');
-const  NodeCache = require('node-cache');
-const postsCache = new NodeCache({stdTTL: 30}); //Hold response in cache for 30 secsonds
+const NodeCache = require('node-cache');
+const postsCache = new NodeCache({ stdTTL: 30 }); //Hold response in cache for 30 secsonds
 
 const ping = (req, res) => {
     const success = true;
@@ -29,26 +29,29 @@ const validateParameters = (req, res, next) => {
 
     //if error message is not an empty string, next with status and message
     //else store the parameters in res.locals to be passed to the next middleware
-    if (message.length > 0) next({ status: 400, message });
-    const tagsToQuery = tags.split(',').filter(word => word.length > 0);
-    res.locals.tags = tagsToQuery;
-    next();
+    if (message.length > 0) {
+        next({ status: 400, message });
+    } else {
+        const tagsToQuery = tags.split(',').filter(word => word.length > 0);
+        res.locals.tags = tagsToQuery;
+        next();
+    }
 }
-const generateCacheKey = (req,res,next) => {
-    let {tags,sortBy,direction} = req.query;
-    if(!sortBy) sortBy = 'id';
-    if(!direction) direction = 'asc';
+const generateCacheKey = (req, res, next) => {
+    let { tags, sortBy, direction } = req.query;
+    if (!sortBy) sortBy = 'id';
+    if (!direction) direction = 'asc';
     const key = `${tags}/${sortBy}/${direction}`
     res.locals.cacheKey = key;
     next();
 }
-const handleCacheResponse = (req,res,next) => {
-    if(postsCache.has(res.locals.cacheKey)) {
+const handleCacheResponse = (req, res, next) => {
+    if (postsCache.has(res.locals.cacheKey)) {
         res.json(postsCache.get(res.locals.cacheKey));
-    }else{
+    } else {
         next();
     }
-    
+
 }
 const filterPosts = async (req, res, next) => {
     //fetch posts
@@ -71,28 +74,28 @@ const filterPosts = async (req, res, next) => {
 
 const sortPosts = (req, res, next) => {
     const { posts } = res.locals;
-    let {sortBy, direction} = req.query;
-    if(!sortBy) sortBy = 'id';
+    let { sortBy, direction } = req.query;
+    if (!sortBy) sortBy = 'id';
 
     let sortedPosts;
-    if(!direction || direction === 'asc'){
+    if (!direction || direction === 'asc') {
         sortedPosts = quickSort((left, right) => left[sortBy] - right[sortBy], posts);
-    }else{
+    } else {
         sortedPosts = quickSort((left, right) => right[sortBy] - left[sortBy], posts);
     }
-     
+
     res.locals.posts = sortedPosts;
-    
+
     next();
 }
 
 const posts = async (req, res) => {
     const { posts, cacheKey } = res.locals;
-    postsCache.set(cacheKey,posts);
+    postsCache.set(cacheKey, posts);
     res.json({ posts });
 }
 
 module.exports = {
     ping: ping,
-    list: [validateParameters, generateCacheKey,handleCacheResponse,asyncErrorBoundary(filterPosts), sortPosts, posts],
+    list: [validateParameters, generateCacheKey, handleCacheResponse, asyncErrorBoundary(filterPosts), sortPosts, posts],
 }

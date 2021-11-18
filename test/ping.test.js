@@ -5,6 +5,7 @@ const { expect, assert } = require('chai');
 describe('GET /api/ping', () => {
     it('Should return json with the key-value pair of success=true', async () => {
         const response = await request(app).get('/api/ping');
+        expect(response.status).to.equal(200);
         //Make sure body is a json obj
         assert.typeOf(response.body, 'object');
         //Ensure that the body appropiate key(s)

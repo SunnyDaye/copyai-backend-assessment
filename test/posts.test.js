@@ -11,6 +11,7 @@ describe('GET /api/posts', () => {
     it('Should return a list of posts in default order(ascending) by the default field(id)', async () => {
         //request
         const response = await request(app).get('/api/posts?tags=health,tech');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a <= b,'id',response.body.posts)).to.be.true;
@@ -19,6 +20,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in descending order by id', async () => {
         const response = await request(app).get('/api/posts?tags=history,culture&sortBy=id&direction=desc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a >= b,'id',response.body.posts)).to.be.true;
@@ -28,6 +30,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in ascending order by the reads field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=startups&sortBy=reads&direction=asc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a <= b,'reads',response.body.posts)).to.be.true;
@@ -36,6 +39,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in descending order by the reads field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=startups&sortBy=reads&direction=desc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a >= b,'reads',response.body.posts)).to.be.true;
@@ -44,6 +48,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in ascending order by the likes field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=design,science&sortBy=likes&direction=asc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a <= b,'likes',response.body.posts)).to.be.true;
@@ -52,6 +57,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in descending order by the likes field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=design,science&sortBy=likes&direction=desc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a >= b,'likes',response.body.posts)).to.be.true;
@@ -60,6 +66,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in ascending order by the popularity field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=politics&sortBy=popularity&direction=asc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a <= b,'popularity',response.body.posts)).to.be.true;
@@ -68,6 +75,7 @@ describe('GET /api/posts', () => {
 
     it('Should return a list of posts in descending order by the popularity field. All post must unique.', async () => {
         const response = await request(app).get('/api/posts?tags=politics&sortBy=popularity&direction=desc');
+        expect(response.status).to.equal(200);
         expect(response.body).to.have.property('posts');
         expect(elementsAreUnique(response.body.posts,'id')).to.be.true;
         expect(isInOrder((a,b)=>a >= b,'popularity',response.body.posts)).to.be.true;
