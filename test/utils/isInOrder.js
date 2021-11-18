@@ -10,10 +10,12 @@
 const isInOrder= (compare,field,posts) => {
     let previous = posts[0][field];
     for(let i = 1; i < posts.length; i++){
+        console.log(previous);
         if(!compare(previous,posts[i][field]))return false;
         previous = posts[i][field];
     }
     return true;
 }
+
 
 module.exports = isInOrder;

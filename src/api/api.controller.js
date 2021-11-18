@@ -1,5 +1,8 @@
 const asyncErrorBoundary = require('../errors/asyncErrorBoundary');
 const service = require('./api.service');
+const quickSort = require('./utils/quickSort');
+const  NodeCache = require('node-cache');
+const postsCache = new NodeCache({stdTTL: 30}); //Hold response in cache for 30 secsonds
 
 const ping = (req, res) => {
     const success = true;
@@ -28,32 +31,68 @@ const validateParameters = (req, res, next) => {
     //else store the parameters in res.locals to be passed to the next middleware
     if (message.length > 0) next({ status: 400, message });
     const tagsToQuery = tags.split(',').filter(word => word.length > 0);
+    res.locals.tags = tagsToQuery;
     next();
 }
-
-const filterPosts = (req, res, next) => {
+const generateCacheKey = (req,res,next) => {
+    let {tags,sortBy,direction} = req.query;
+    if(!sortBy) sortBy = 'id';
+    if(!direction) direction = 'asc';
+    const key = `${tags}/${sortBy}/${direction}`
+    res.locals.cacheKey = key;
+    next();
+}
+const handleCacheResponse = (req,res,next) => {
+    if(postsCache.has(res.locals.cacheKey)) {
+        res.json(postsCache.get(res.locals.cacheKey));
+    }else{
+        next();
+    }
+    
+}
+const filterPosts = async (req, res, next) => {
     //fetch posts
+    const { tags } = res.locals
+    const posts = await service.fetchPosts(tags);
     //create a map to hold ids and post objects
+    const uniquePostCache = {};
     //iterate from 0 to end of array
-    //check if post id is in map
-    //if not, add id and the post object to map
+    posts.forEach(post => {
+        if (!uniquePostCache[post.id]) uniquePostCache[post.id] = post;
+    })
     // store Object.values(map) in res.locals to be passed
+    const filteredPosts = Object.values(uniquePostCache);
+
+    res.locals.posts = filteredPosts;
     //next() to move to next middleware
+    next();
 
 }
 
 const sortPosts = (req, res, next) => {
-    //get posts from res.locals
-    //get sortBy and direction params from res locals
-    //sort array given the direction and the field
-    //store array in res locals to be passed to the next middleware
+    const { posts } = res.locals;
+    let {sortBy, direction} = req.query;
+    if(!sortBy) sortBy = 'id';
+
+    let sortedPosts;
+    if(!direction || direction === 'asc'){
+        sortedPosts = quickSort((left, right) => left[sortBy] - right[sortBy], posts);
+    }else{
+        sortedPosts = quickSort((left, right) => right[sortBy] - left[sortBy], posts);
+    }
+     
+    res.locals.posts = sortedPosts;
+    
+    next();
 }
 
 const posts = async (req, res) => {
-    res.status(200).send("Posts");
+    const { posts, cacheKey } = res.locals;
+    postsCache.set(cacheKey,posts);
+    res.json({ posts });
 }
 
 module.exports = {
     ping: ping,
-    list: [validateParameters, posts],
+    list: [validateParameters, generateCacheKey,handleCacheResponse,asyncErrorBoundary(filterPosts), sortPosts, posts],
 }
